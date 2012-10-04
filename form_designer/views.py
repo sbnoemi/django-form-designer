@@ -1,22 +1,19 @@
-from django.shortcuts import get_object_or_404, render_to_response
-from django.template import RequestContext
-from django.utils.translation import ugettext as _
-from django.http import HttpResponseRedirect
-from django.conf import settings
 from form_designer import settings as app_settings
-from django.contrib import messages
-from django.core.context_processors import csrf
-
-import os
-import random
-from datetime import datetime
-
 from form_designer.forms import DesignedForm
-from form_designer.models import FormDefinition, FormLog
+from form_designer.models import FormDefinition
 from form_designer.uploads import handle_uploaded_files
 
+from django.http import HttpResponseRedirect
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, render_to_response
+from django.template import RequestContext
+from django.core.context_processors import csrf
+from django.utils.translation import ugettext as _
 
-def process_form(request, form_definition, extra_context={}, disable_redirection=False):
+
+def process_form(request, form_definition, extra_context={},
+        disable_redirection=False, suppress_messages=False):
+
     context = extra_context
     success_message = form_definition.success_message or _('Thank you, the data was submitted successfully.')
     error_message = form_definition.error_message or _('The data could not be submitted, please try again.')
@@ -49,7 +46,8 @@ def process_form(request, form_definition, extra_context={}, disable_redirection
                 form = DesignedForm(form_definition) # clear form
         else:
             form_error = True
-            messages.error(request, error_message)
+            if not suppress_messages:
+                messages.error(request, error_message)
     else:
         if form_definition.allow_get_initial:
             form = DesignedForm(form_definition, initial_data=request.GET)
@@ -63,11 +61,11 @@ def process_form(request, form_definition, extra_context={}, disable_redirection
         'form_definition': form_definition
     })
     context.update(csrf(request))
-    
+
     if form_definition.display_logged:
         logs = form_definition.logs.all().order_by('created')
         context.update({'logs': logs})
-        
+
     return context
 
 def _form_detail_view(request, form_definition):
@@ -82,8 +80,8 @@ def _form_detail_view(request, form_definition):
 
 def detail(request, object_name):
     form_definition = get_object_or_404(FormDefinition, name=object_name, require_hash=False)
-    return _form_detail_view(request, form_definition) 
+    return _form_detail_view(request, form_definition)
 
 def detail_by_hash(request, public_hash):
     form_definition = get_object_or_404(FormDefinition, public_hash=public_hash)
-    return _form_detail_view(request, form_definition) 
+    return _form_detail_view(request, form_definition)
