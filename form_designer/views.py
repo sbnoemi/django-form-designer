@@ -34,7 +34,8 @@ def process_form(request, form_definition, extra_context={},
             files = handle_uploaded_files(form_definition, form)
 
             # Successful submission
-            messages.success(request, success_message)
+            if not suppress_messages:
+                messages.success(request, success_message)
             form_success = True
             if form_definition.log_data:
                 form_definition.log(form, request.user)
