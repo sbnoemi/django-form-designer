@@ -13,7 +13,7 @@ from django.utils.translation import ugettext as _
 
 def process_form(request, form_definition, extra_context={},
         disable_redirection=False, suppress_messages=False,
-        force_log_data=False, force_retain=False):
+        force_log_data=False, force_retain=False, suppress_log_data=False):
 
     context = extra_context
     success_message = form_definition.success_message or _('Thank you, the data was submitted successfully.')
@@ -38,8 +38,9 @@ def process_form(request, form_definition, extra_context={},
             if not suppress_messages:
                 messages.success(request, success_message)
             form_success = True
-            if form_definition.log_data or force_log_data:
-                context["form_log"] = form_definition.log(form, request.user)
+            if not suppress_log_data \
+                and (form_definition.log_data or force_log_data):
+                    context["form_log"] = form_definition.log(form, request.user)
             if form_definition.mail_to:
                 form_definition.send_mail(form, files)
             if form_definition.success_redirect and not disable_redirection:
