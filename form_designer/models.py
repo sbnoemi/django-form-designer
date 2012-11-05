@@ -278,6 +278,13 @@ class FormDefinitionField(models.Model):
                 args.update({
                     'choices': tuple(choices)
                 })
+        
+        if getattr(django_settings, 'FORM_DESIGNER_INITIAL_CHOICE_EMPTY', False) \
+            and self.field_class == 'django.forms.ChoiceField' \
+            and not self.widget:
+                choices = list(args['choices'])
+                choices.insert(0, ('', _('Please Select...')))
+                args['choices'] = choices
 
         if self.field_class in ('django.forms.ModelChoiceField', 'django.forms.ModelMultipleChoiceField'):
             args.update({
