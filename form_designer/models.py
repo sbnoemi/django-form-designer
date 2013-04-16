@@ -5,7 +5,8 @@ from form_designer import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings as django_settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
 from django.utils.datastructures import SortedDict
 
 from decimal import Decimal
@@ -14,6 +15,7 @@ import re
 import uuid
 import hashlib
 
+User = get_user_model()
 
 if settings.VALUE_PICKLEFIELD:
     from picklefield.fields import PickledObjectField
